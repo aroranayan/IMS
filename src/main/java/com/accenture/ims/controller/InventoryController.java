@@ -23,7 +23,12 @@ import com.accenture.ims.model.CarStandingOrders;
 import com.accenture.ims.service.AccessoryInventoryService;
 import com.accenture.ims.service.CarInventoryService;
 import com.accenture.ims.service.OrderService;
-
+import com.accenture.ims.utils.timelogger.LogExecutionTime;
+/**
+ * 	Entry point having all the end points
+ * 
+ *	@author nayan.arora
+ */
 @RestController
 public class InventoryController {
 	
@@ -47,6 +52,11 @@ public class InventoryController {
 	@Autowired
 	OrderService orderService;
 	
+	/**
+	 * To upload cars inventory
+	 * @param file
+	 * @return
+	 */
 	@PostMapping("/uploadCars")
     public Object uploadCarsInventory(@RequestParam("file") MultipartFile file) {
 		try {
@@ -62,6 +72,11 @@ public class InventoryController {
 		return null;
 	}
 	
+	/**
+	 * To Upload Accessory Inventory
+	 * @param file
+	 * @return
+	 */
 	@PostMapping("/uploadAccessories")
     public Object uploadAccessoryInventory(@RequestParam("file") MultipartFile file) {
 		try {
@@ -75,12 +90,21 @@ public class InventoryController {
 		return null;
 	}
 	
+	/**
+	 * To convert CSV data to CarInventory Model
+	 * @param records
+	 * @return List<CarInventory>
+	 */
 	private List<CarInventory> csvToCarsInventory(List<CSVRecord> records) {
 		return records.stream().map(record -> new CarInventory(record.get(0),record.get(1),
     			record.get(2),record.get(3),Integer.valueOf(record.get(4)),Integer.valueOf(record.get(5))))
     			.collect(Collectors.toList());
 	}
-	
+	/**
+	 * To convert CSV data to AccessoryInventory Model
+	 * @param records
+	 * @return List<AccessoryInventory>
+	 */
 	private List<AccessoryInventory> csvToAccessoryInventory(List<CSVRecord> records){
     	return records.stream().map(record -> new AccessoryInventory(record.get(0),record.get(1),
     			record.get(2),Integer.valueOf(record.get(3)),Integer.valueOf(record.get(4))))
@@ -89,7 +113,14 @@ public class InventoryController {
     	
     }
 	
+	/**
+	 * To place orders by uploading a file
+	 * Returns a list of invalid orders
+	 * @param file
+	 * @return List<CarStandingOrders>
+	 */
 	@PostMapping("/placeOrders")
+	@LogExecutionTime
     public List<CarStandingOrders> placeOrders(@RequestParam("file") MultipartFile file) {
 		List<CarStandingOrders> invalidOrders = null;
 		try {
@@ -105,6 +136,11 @@ public class InventoryController {
 		return invalidOrders;
 	}
 	
+	/**
+	 * To convert CSV data to CarStandingOrders model
+	 * @param records
+	 * @return List<CarStandingOrders>
+	 */
 	private List<CarStandingOrders> csvToCarStandingOrders(List<CSVRecord> records){
     	return records.stream().map(record -> new CarStandingOrders(record.get(0),record.get(1),
     			record.get(2),record.get(3),record.get(4),record.get(5),Arrays.asList(record.get(6).split(":")),
