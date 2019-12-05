@@ -21,9 +21,7 @@ public class AccessoryInventoryServiceImpl implements AccessoryInventoryService 
 	public void saveAccessoriesInfo(List<AccessoryInventory> accessories) {
 		try {
 			accessRepo.saveAll(accessories);
-			accessRepo.findAll().forEach(accessory -> System.out.println(accessory.getModel()));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 	}

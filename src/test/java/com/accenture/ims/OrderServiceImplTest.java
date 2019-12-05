@@ -4,8 +4,6 @@
 package com.accenture.ims;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -41,9 +39,6 @@ import com.accenture.ims.service.OrderService;
 class OrderServiceImplTest {
 	
 	
-	@InjectMocks
-	OrderService orderService;
-	
 	@Mock
 	SalesEstimateRepository salesRepo;
 	
@@ -58,6 +53,11 @@ class OrderServiceImplTest {
 	
 	@Mock
 	InsuranceProviderRepository insuranceRepo;
+	
+	
+	@InjectMocks
+	OrderService orderService;
+	
 	
 	@Before
     public void init() {

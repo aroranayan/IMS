@@ -77,9 +77,4 @@ public class AccessoryInventory {
 				&& this.vendor.equals(order.getVendor()));
 	}
 
-	public List<AccessoryInventory> getAccessoriesForModel(CarStandingOrders order) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

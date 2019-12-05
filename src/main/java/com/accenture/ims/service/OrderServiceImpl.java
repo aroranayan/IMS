@@ -13,9 +13,9 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.accenture.ims.controller.InventoryController;
 import com.accenture.ims.exceptions.OrderServiceException;
 import com.accenture.ims.model.AccessoryInventory;
 import com.accenture.ims.model.CarInventory;
@@ -51,6 +51,7 @@ public class OrderServiceImpl implements OrderService {
 	SalesEstimateRepository salesRepo;
 
 	@Override
+	@Transactional
 	@LogExecutionTime
 	public List<CarStandingOrders> processOrders(List<CarStandingOrders> orders) throws OrderServiceException {
 		List<CarStandingOrders> invalidOrders = new ArrayList<CarStandingOrders>();
@@ -62,7 +63,9 @@ public class OrderServiceImpl implements OrderService {
 			orders.stream().forEach(order -> {
 				CarStandingOrders checkedOrder = checkForValidOrder(order,availableCars,availableAccessories,taxRates,insuranceProviders);
 				if(checkedOrder.getErrorMessage()==null || checkedOrder.getErrorMessage().isEmpty()) {
+					System.out.println("Starting "+System.currentTimeMillis());
 					placeOrder(order);
+					System.out.println("Ending "+System.currentTimeMillis());
 				}else {
 					invalidOrders.add(checkedOrder);
 				}
@@ -123,6 +126,7 @@ public class OrderServiceImpl implements OrderService {
 		return order;
 	}
 	
+	@Async
 	private void placeOrder(CarStandingOrders order) {
 		try {
 			SalesEstimate saleForState = salesRepo.findByRegion(order.getRegion());
@@ -155,7 +159,7 @@ public class OrderServiceImpl implements OrderService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage(),e);
+			logger.error(e.getMessage());
 		}
 		return accessoryCost;
 	}
