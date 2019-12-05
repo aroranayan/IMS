@@ -63,9 +63,7 @@ public class OrderServiceImpl implements OrderService {
 			orders.stream().forEach(order -> {
 				CarStandingOrders checkedOrder = checkForValidOrder(order,availableCars,availableAccessories,taxRates,insuranceProviders);
 				if(checkedOrder.getErrorMessage()==null || checkedOrder.getErrorMessage().isEmpty()) {
-					System.out.println("Starting "+System.currentTimeMillis());
 					placeOrder(order);
-					System.out.println("Ending "+System.currentTimeMillis());
 				}else {
 					invalidOrders.add(checkedOrder);
 				}
