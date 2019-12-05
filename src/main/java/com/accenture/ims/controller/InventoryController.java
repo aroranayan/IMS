@@ -1,28 +1,38 @@
 package com.accenture.ims.controller;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.accenture.ims.exceptions.OrderServiceException;
 import com.accenture.ims.model.AccessoryInventory;
 import com.accenture.ims.model.CarInventory;
 import com.accenture.ims.model.CarStandingOrders;
+import com.accenture.ims.model.SalesEstimate;
 import com.accenture.ims.service.AccessoryInventoryService;
 import com.accenture.ims.service.CarInventoryService;
 import com.accenture.ims.service.OrderService;
+import com.accenture.ims.service.SalesEstimateService;
 import com.accenture.ims.utils.timelogger.LogExecutionTime;
 /**
  * 	Entry point having all the end points
@@ -52,13 +62,16 @@ public class InventoryController {
 	@Autowired
 	OrderService orderService;
 	
+	@Autowired
+	SalesEstimateService salesService;
+	
 	/**
 	 * To upload cars inventory
 	 * @param file
 	 * @return
 	 */
 	@PostMapping("/uploadCars")
-    public Object uploadCarsInventory(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadCarsInventory(@RequestParam("file") MultipartFile file) {
 		try {
 			CSVParser records = CSVFormat.EXCEL.withHeader().parse(new InputStreamReader(file.getInputStream()));
 			if(!records.getHeaderMap().keySet().containsAll(CAR_INV_HEADERS)){
@@ -67,9 +80,10 @@ public class InventoryController {
 			List<CarInventory> cars = csvToCarsInventory(records.getRecords());
 			carService.saveCarDetails(cars);
 		}catch(Exception e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(),e);
+			return new ResponseEntity<>("Failed to Upload Car Inventory", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return null;
+		return new ResponseEntity<>("Car Inventory Uploaded Successfully.", HttpStatus.OK);
 	}
 	
 	/**
@@ -78,16 +92,17 @@ public class InventoryController {
 	 * @return
 	 */
 	@PostMapping("/uploadAccessories")
-    public Object uploadAccessoryInventory(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadAccessoryInventory(@RequestParam("file") MultipartFile file) {
 		try {
 			CSVParser records = CSVFormat.EXCEL.withHeader().parse(new InputStreamReader(file.getInputStream()));
 			records.getHeaderMap().keySet().containsAll(CAR_INV_HEADERS);
 			List<AccessoryInventory> accessories = csvToAccessoryInventory(records.getRecords());
 			accessService.saveAccessoriesInfo(accessories);
 		}catch(Exception e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(),e);
+			return new ResponseEntity<>("Failed to Upload Accessory Inventory", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return null;
+		return new ResponseEntity<>("Accessory Inventory Uploaded Successfully.", HttpStatus.OK);
 	}
 	
 	/**
@@ -121,7 +136,7 @@ public class InventoryController {
 	 */
 	@PostMapping("/placeOrders")
 	@LogExecutionTime
-    public List<CarStandingOrders> placeOrders(@RequestParam("file") MultipartFile file) {
+    public void placeOrders(@RequestParam("file") MultipartFile file,HttpServletResponse response) {
 		List<CarStandingOrders> invalidOrders = null;
 		try {
 			CSVParser records = CSVFormat.EXCEL.withHeader().parse(new InputStreamReader(file.getInputStream()));
@@ -129,11 +144,24 @@ public class InventoryController {
 				throw new Exception("Invalid Columns");
 			}
 			List<CarStandingOrders> orders = csvToCarStandingOrders(records.getRecords());
-			invalidOrders = orderService.placeOrders(orders);
+			invalidOrders = orderService.processOrders(orders);
+			if(invalidOrders == null || invalidOrders.isEmpty()) {
+				generateSalesReport(response);
+				//return new ResponseEntity<>("Sales Report Generated Successfully.", HttpStatus.OK);
+			}else {
+				generateInvalidOrdersReport(response, invalidOrders);
+				//return new ResponseEntity<>("Some orders are invalid.", HttpStatus.OK);
+			}
+		}catch(OrderServiceException e) {
+			logger.error(e.getMessage(),e);
+			//return new ResponseEntity<>("Failed to process orders.", HttpStatus.INTERNAL_SERVER_ERROR);
+		}catch(IOException e) {
+			logger.error(e.getMessage(),e);
+			//return new ResponseEntity<>("Failed to generate Report for the placed Orders.", HttpStatus.INTERNAL_SERVER_ERROR);
 		}catch(Exception e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(),e);
+			//return new ResponseEntity<>("Failed to Place Orders.", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return invalidOrders;
 	}
 	
 	/**
@@ -147,5 +175,46 @@ public class InventoryController {
     			record.get(7),record.get(4).equals("Yes")?true:false))
     			.collect(Collectors.toList());	
     }
+	
+	private void generateSalesReport(HttpServletResponse response) throws IOException {
+	        String filename = "RegionalEstimatedSalesReport.csv";
+
+	        response.setContentType("text/csv");
+	        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+	                "attachment; filename=\"" + filename + "\"");			
+
+			CSVPrinter csvPrinter = new CSVPrinter(response.getWriter(), CSVFormat.DEFAULT
+			        .withHeader("State", "Estimated Sales in Units", "Total Estimated Sales", "Estimated Net Income"));
+			
+			List<SalesEstimate> salesReport = salesService.getSalesEstimates();
+			for (SalesEstimate salesEstimate : salesReport) {
+				csvPrinter.printRecord(salesEstimate.getRegion(),salesEstimate.getUnitsSold(),salesEstimate.getTotalSales(),
+						salesEstimate.getNetIncome());
+			}
+			csvPrinter.flush();
+			csvPrinter.close();
+ 
+	}
+	
+	private void generateInvalidOrdersReport(HttpServletResponse response,List<CarStandingOrders> invalidOrders) throws IOException {
+			//set file name and content type
+	        String filename = "CarStandingOrdersError.csv";
+
+	        response.setContentType("text/csv");
+	        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+	                "attachment; filename=\"" + filename + "\"");
+
+			CSVPrinter csvPrinter = new CSVPrinter(response.getWriter(), CSVFormat.DEFAULT
+			        .withHeader("customer Name", 	"Region",	"Vendor",	"Model",	"Variant",	"Color",	"accessories",	"motorInsurance",	"personalProtectPlan",	"Error Message"));
+			
+			for (CarStandingOrders order : invalidOrders) {
+				csvPrinter.printRecord(order.getCustomerName(),order.getRegion(),order.getVendor(),order.getModel(),
+						order.getVariant(),order.getColor(),String.join(":", order.getAccessories()),order.getMotorInsurance(),
+						order.getPersonalProtectPlan()?"Yes":"No",order.getErrorMessage());
+			}
+			csvPrinter.flush();
+			csvPrinter.close();
+		 
+	}
 
 }

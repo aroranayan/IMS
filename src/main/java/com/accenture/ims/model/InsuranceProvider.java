@@ -14,6 +14,8 @@ public class InsuranceProvider {
 	@Column
 	private Integer firstYearPremium;
 	
+	public InsuranceProvider() {}
+	
 	public InsuranceProvider(String motorInsuranceProvider, String personalProtectPlanOffered,
 			Integer firstYearPremium) {
 		super();

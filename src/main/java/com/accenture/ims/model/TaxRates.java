@@ -16,6 +16,8 @@ public class TaxRates {
 	@Column
 	private Double taxRate;
 	
+	public TaxRates() {}
+	
 	public TaxRates(String state, Double taxRate) {
 		super();
 		this.state = state;

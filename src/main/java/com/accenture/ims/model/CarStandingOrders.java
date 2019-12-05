@@ -15,6 +15,10 @@ public class CarStandingOrders {
 	private String motorInsurance;
 	private Boolean personalProtectPlan;
 	private String errorMessage;
+	private Double taxExpense;
+	private Double salePrice;
+	
+	public CarStandingOrders() {}
 	
 	public CarStandingOrders(String customerName, String region, String vendor, String model, String variant,
 			String color, List<String> accessories, String motorInsurance, Boolean personalProtectPlan) {
@@ -108,6 +112,22 @@ public class CarStandingOrders {
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
+	}
+
+	public Double getTaxExpense() {
+		return taxExpense;
+	}
+
+	public void setTaxExpense(Double taxExpense) {
+		this.taxExpense = taxExpense;
+	}
+
+	public Double getSalePrice() {
+		return salePrice;
+	}
+
+	public void setSalePrice(Double salePrice) {
+		this.salePrice = salePrice;
 	}
 	
 }
