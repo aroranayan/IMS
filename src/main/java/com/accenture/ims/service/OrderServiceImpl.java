@@ -30,6 +30,11 @@ import com.accenture.ims.repository.SalesEstimateRepository;
 import com.accenture.ims.repository.TaxRatesRepository;
 import com.accenture.ims.utils.timelogger.LogExecutionTime;
 
+/**
+ * Business logic to process all the orders
+ * @author nayan.arora
+ *
+ */
 @Service
 public class OrderServiceImpl implements OrderService {
 	
@@ -74,7 +79,15 @@ public class OrderServiceImpl implements OrderService {
 		return invalidOrders;
 	}
 	
-	
+	/**
+	 * To check if a order is valid 
+	 * @param order
+	 * @param availableCars
+	 * @param availableAccessories
+	 * @param taxRates
+	 * @param insuranceProviders
+	 * @return
+	 */
 	private CarStandingOrders checkForValidOrder(CarStandingOrders order,List<CarInventory> availableCars,List<AccessoryInventory> availableAccessories,
 			List<TaxRates> taxRates,List<InsuranceProvider> insuranceProviders) {
 		Stream<AccessoryInventory> accessoryStream = null;
@@ -124,6 +137,10 @@ public class OrderServiceImpl implements OrderService {
 		return order;
 	}
 	
+	/**
+	 * To place order by updating sales estimate
+	 * @param order
+	 */
 	@Async
 	private void placeOrder(CarStandingOrders order) {
 		try {
@@ -139,12 +156,20 @@ public class OrderServiceImpl implements OrderService {
 				saleForState.setNetIncome(order.getSalePrice() - order.getTaxExpense());
 				saleForState.setRegion(order.getRegion());
 			}
+			logger.info(order.toString());
 			salesRepo.save(saleForState);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
 	}
 	
+	/**
+	 * Calculate accessory cost
+	 * Return null if invalid accessory ordered
+	 * @param accessoriesOrdered
+	 * @param accMap
+	 * @return
+	 */
 	private Double getAccessoryCost(List<String> accessoriesOrdered, Map<String,AccessoryInventory> accMap) {
 		Double accessoryCost = 0.0;
 		try {

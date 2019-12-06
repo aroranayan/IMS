@@ -16,6 +16,9 @@ public class AccessoryInventoryServiceImpl implements AccessoryInventoryService 
 	@Autowired
 	AccessoryInventoryRepository accessRepo;
 
+	/**
+	 * Retrieve Accessories List
+	 */
 	@Override
 	@Transactional
 	public void saveAccessoriesInfo(List<AccessoryInventory> accessories) {

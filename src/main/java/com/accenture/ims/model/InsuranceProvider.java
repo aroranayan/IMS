@@ -4,6 +4,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+
+/**
+ * Entity class to save Insurance Providers
+ * @author nayan.arora
+ *
+ */
 @Entity
 public class InsuranceProvider {
 	

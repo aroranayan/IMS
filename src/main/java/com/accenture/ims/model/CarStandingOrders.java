@@ -129,5 +129,15 @@ public class CarStandingOrders {
 	public void setSalePrice(Double salePrice) {
 		this.salePrice = salePrice;
 	}
+
+	@Override
+	public String toString() {
+		return "CarStandingOrders [customerName=" + customerName + ", region=" + region + ", vendor=" + vendor
+				+ ", model=" + model + ", variant=" + variant + ", color=" + color + ", accessories=" + accessories
+				+ ", motorInsurance=" + motorInsurance + ", personalProtectPlan=" + personalProtectPlan
+				+ ", errorMessage=" + errorMessage + ", taxExpense=" + taxExpense + ", salePrice=" + salePrice + "]";
+	}
+	
+	
 	
 }

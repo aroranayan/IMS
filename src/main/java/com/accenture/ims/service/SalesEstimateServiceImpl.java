@@ -14,6 +14,10 @@ public class SalesEstimateServiceImpl implements SalesEstimateService{
 	@Autowired
 	SalesEstimateRepository salesRepo;
 
+	
+	/**
+	 * Retrieve Sales Estimates
+	 */
 	@Override
 	public List<SalesEstimate> getSalesEstimates() {
 		return (List<SalesEstimate>) salesRepo.findAll();

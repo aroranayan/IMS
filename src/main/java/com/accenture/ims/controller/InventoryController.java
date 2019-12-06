@@ -176,6 +176,11 @@ public class InventoryController {
     			.collect(Collectors.toList());	
     }
 	
+	/**
+	 * To generate the final output sales report
+	 * @param response
+	 * @throws IOException
+	 */
 	private void generateSalesReport(HttpServletResponse response) throws IOException {
 	        String filename = "RegionalEstimatedSalesReport.csv";
 
@@ -195,7 +200,12 @@ public class InventoryController {
 			csvPrinter.close();
  
 	}
-	
+	/**
+	 * To generate the final output invalid orders report
+	 * @param response
+	 * @param invalidOrders
+	 * @throws IOException
+	 */
 	private void generateInvalidOrdersReport(HttpServletResponse response,List<CarStandingOrders> invalidOrders) throws IOException {
 			//set file name and content type
 	        String filename = "CarStandingOrdersError.csv";

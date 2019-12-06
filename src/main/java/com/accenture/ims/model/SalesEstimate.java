@@ -5,6 +5,12 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+
+/**
+ * Entity class to get Sales Estimate
+ * @author nayan.arora
+ *
+ */
 @Entity
 public class SalesEstimate {
 		
@@ -51,6 +57,13 @@ public class SalesEstimate {
 	public void setNetIncome(Double netIncome) {
 		this.netIncome = netIncome;
 	}
+	@Override
+	public String toString() {
+		return "SalesEstimate [id=" + id + ", region=" + region + ", unitsSold=" + unitsSold + ", totalSales="
+				+ totalSales + ", netIncome=" + netIncome + "]";
+	}
+	
+	
 	
 	
 }

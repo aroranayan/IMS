@@ -5,6 +5,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+/**
+ * Entity class to save Car Details
+ * @author nayan.arora
+ *
+ */
 @Entity
 public class CarInventory {
 	@Id

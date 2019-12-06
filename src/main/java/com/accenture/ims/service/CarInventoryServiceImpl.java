@@ -16,6 +16,9 @@ public class CarInventoryServiceImpl implements CarInventoryService {
 	@Autowired
 	CarInventoryRepository carRepo;
 
+	/**
+	 * Retrieve Car Inventory Details
+	 */
 	@Override
 	@Transactional
 	public void saveCarDetails(List<CarInventory> cars) {

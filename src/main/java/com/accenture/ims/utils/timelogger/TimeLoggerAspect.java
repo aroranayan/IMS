@@ -5,6 +5,11 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+/**
+ * Aspect class for Custom Time logging annotation
+ * @author nayan.arora
+ *
+ */
 @Aspect
 @Component
 public class TimeLoggerAspect {
